@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: skybrief
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "18"
+      # Render injects PORT automatically. The server already listens on process.env.PORT (default 3847) and 0.0.0.0.
+      # Optional live NOTAMs (do not commit secrets):
+      # - key: AUTOROUTER_USER
+      #   sync: false
+      # - key: AUTOROUTER_PASSWORD
+      #   sync: false

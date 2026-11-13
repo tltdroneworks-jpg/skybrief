@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/weather",
+      "destination": "/api/weather"
+    },
+    {
+      "source": "/api/wind",
+      "destination": "/api/wind"
+    },
+    {
+      "source": "/api/notams",
+      "destination": "/api/notams"
+    },
+    {
+      "source": "/api/sigmets",
+      "destination": "/api/sigmets"
+    },
+    {
+      "source": "/api/airspace",
+      "destination": "/api/airspace"
+    },
+    {
+      "source": "/api/pdf",
+      "destination": "/api/pdf"
+    },
+    {
+      "source": "/api/meta",
+      "destination": "/api/meta"
+    },
+    {
+      "source": "/api/radar",
+      "destination": "/api/radar"
+    },
+    {
+      "source": "/api/forecast",
+      "destination": "/api/forecast"
+    },
+    {
+      "source": "/api/point",
+      "destination": "/api/point"
+    },
+    {
+      "source": "/sw.js",
+      "destination": "/sw.js"
+    }
+  ]
+}

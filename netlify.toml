@@ -1,0 +1,52 @@
+[build]
+  publish = "public"
+
+[[redirects]]
+  from = "/api/weather"
+  to = "/.netlify/functions/weather"
+  status = 200
+
+[[redirects]]
+  from = "/api/wind"
+  to = "/.netlify/functions/wind"
+  status = 200
+
+[[redirects]]
+  from = "/api/notams"
+  to = "/.netlify/functions/notams"
+  status = 200
+
+[[redirects]]
+  from = "/api/sigmets"
+  to = "/.netlify/functions/sigmets"
+  status = 200
+
+[[redirects]]
+  from = "/api/airspace"
+  to = "/.netlify/functions/airspace"
+  status = 200
+
+[[redirects]]
+  from = "/api/pdf"
+  to = "/.netlify/functions/pdf"
+  status = 200
+
+[[redirects]]
+  from = "/api/meta"
+  to = "/.netlify/functions/meta"
+  status = 200
+
+[[redirects]]
+  from = "/api/radar"
+  to = "/.netlify/functions/radar"
+  status = 200
+
+[[redirects]]
+  from = "/api/forecast"
+  to = "/.netlify/functions/forecast"
+  status = 200
+
+[[redirects]]
+  from = "/api/point"
+  to = "/.netlify/functions/point"
+  status = 200

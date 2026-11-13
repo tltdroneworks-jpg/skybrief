@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Skybrief — Pilot weather desk</title>
+    <meta
+      name="description"
+      content="South African pilot and drone briefing desk: live rain radar, satellite and forecast map, METAR/TAF, SIGMETs, NOTAMs, ATNS airspace and a text PDF. Not an official briefing."
+    />
+    <meta name="theme-color" content="#eef3f8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Skybrief" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+    <div id="install-banner" class="install-banner" hidden>
+      <p id="install-copy">Install Skybrief on your home screen for a one-tap briefing desk.</p>
+      <div class="install-actions">
+        <button type="button" id="install-btn" class="btn primary" hidden>Add to Home Screen</button>
+        <button type="button" id="install-dismiss" class="btn">Not now</button>
+      </div>
+    </div>
+
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <div>
+          <p class="eyebrow">South Africa · aviation briefing desk</p>
+          <h1>Skybrief</h1>
+        </div>
+      </div>
+      <div class="top-meta">
+        <p id="clock" class="clock">—</p>
+        <p id="updated" class="updated">Weather not loaded yet</p>
+      </div>
+    </header>
+
+    <div class="disclaimer" role="note">
+      <strong>Not an official briefing.</strong>
+      This site is a convenience pack. It is not an official South African meteorological or NOTAM briefing and must not be the sole source for a flight decision. Official MET is
+      <a href="https://aviation.weathersa.co.za/" target="_blank" rel="noopener noreferrer">SAWS</a>.
+      Official NOTAMs, PIBs and flight-plan filing are from
+      <a href="https://file2fly.atns.co.za/aes/login.jsp" target="_blank" rel="noopener noreferrer">ATNS File2Fly</a>
+      (free registration). Airspace from the ATNS RSA DATA KMZ is a gross representation only and is not for navigation. The drone overlay is a planning aid, not permission to fly.
+    </div>
+
+    <section class="controls" aria-label="Route and airport selection">
+      <form id="icao-form" class="icao-form route-form">
+        <label class="field">
+          <span>Departure</span>
+          <input id="dep-input" name="dep" type="text" value="" autocomplete="off" spellcheck="false" placeholder="FACT" maxlength="4" />
+        </label>
+        <label class="field">
+          <span>Destination</span>
+          <input id="dest-input" name="dest" type="text" value="" autocomplete="off" spellcheck="false" placeholder="FAOR" maxlength="4" />
+        </label>
+        <label class="field">
+          <span>Alternates</span>
+          <input id="alts-input" name="alts" type="text" value="" autocomplete="off" spellcheck="false" placeholder="FALE, FAGG" />
+        </label>
+        <label class="field field-wide">
+          <span>ICAO list (or extra airports)</span>
+          <input
+            id="icao-input"
+            name="ids"
+            type="text"
+            value="FAOR"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="FAOR, FACT, FALE"
+          />
+        </label>
+        <div class="control-actions">
+          <button type="submit" class="btn primary">Load briefing</button>
+          <button type="button" id="refresh-btn" class="btn">Refresh now</button>
+          <a id="pdf-btn" class="btn primary" href="/api/pdf?ids=FAOR">Download PDF</a>
+        </div>
+      </form>
+      <div class="pdf-opts" role="group" aria-label="PDF contents">
+        <label class="pdf-opt"><input type="checkbox" id="pdf-notams" /> Include NOTAMs</label>
+        <label class="pdf-opt"><input type="checkbox" id="pdf-sigmets" /> Include SIGMETs</label>
+        <label class="pdf-opt"><input type="checkbox" id="pdf-airspace" /> Include airspace / drone notes</label>
+        <span class="hint">Default is METAR and TAF only. Airspace notes use the last point tapped on the map.</span>
+      </div>
+      <div id="presets" class="presets" role="group" aria-label="Airport and route presets"></div>
+      <div id="focus-row" class="focus-row" hidden></div>
+    </section>
+
+    <main class="layout">
+      <section class="panel map-panel tab-panel active" data-tab="map" aria-labelledby="map-heading">
+        <div class="panel-head">
+          <div>
+            <h2 id="map-heading">Weather and airspace map</h2>
+            <p id="map-caption" class="caption">Skybrief weather map plus optional ATNS airspace and a drone planning overlay.</p>
+          </div>
+          <a id="windy-full" class="text-link" href="https://www.windy.com/FAOR" target="_blank" rel="noopener noreferrer">Open FAOR on Windy</a>
+        </div>
+        <div class="map-tabs" role="tablist" aria-label="Map source">
+          <button type="button" class="map-tab active" data-map="skybrief" role="tab" aria-selected="true">Skybrief map</button>
+          <button type="button" class="map-tab" data-map="windy" role="tab" aria-selected="false">Windy (optional)</button>
+        </div>
+        <div class="wx-layer-bar" role="radiogroup" aria-label="Weather layers">
+          <span class="layer-label">Weather</span>
+          <button type="button" class="wx-layer active" data-wx="wind" aria-pressed="true">Wind</button>
+          <button type="button" class="wx-layer" data-wx="radar" aria-pressed="false">Rain radar</button>
+          <button type="button" class="wx-layer" data-wx="satellite" aria-pressed="false">Satellite</button>
+          <button type="button" class="wx-layer" data-wx="clouds" aria-pressed="false">Clouds</button>
+          <button type="button" class="wx-layer" data-wx="precip" aria-pressed="false">Rain forecast</button>
+          <button type="button" class="wx-layer" data-wx="temp" aria-pressed="false">Temperature</button>
+          <button type="button" class="wx-layer" data-wx="gusts" aria-pressed="false">Gusts</button>
+          <button type="button" class="wx-layer" data-wx="visibility" aria-pressed="false">Visibility</button>
+          <button type="button" class="wx-layer" data-wx="cloudbase" aria-pressed="false">Cloud base</button>
+        </div>
+        <div id="wx-extras" class="wx-extras"></div>
+        <div id="leaflet-wrap" class="frame-wrap">
+          <div id="leaflet-map" role="img" aria-label="Weather and airspace map of loaded airports"></div>
+          <div id="wx-legend" class="wind-legend" aria-hidden="true">
+            <span class="lg lg-1">0–3 kt</span>
+            <span class="lg lg-2">3–8</span>
+            <span class="lg lg-3">8–15</span>
+            <span class="lg lg-4">15–25</span>
+            <span class="lg lg-5">25+</span>
+          </div>
+          <div id="time-slider" class="time-slider" hidden>
+            <button type="button" id="time-play" class="time-play" aria-label="Play or pause animation" hidden>Play</button>
+            <input id="time-range" type="range" min="0" max="48" value="0" step="1" aria-label="Forecast or radar time" />
+            <span id="time-label" class="time-label">Now</span>
+          </div>
+          <div id="point-readout" class="point-readout" hidden></div>
+        </div>
+        <div id="windy-wrap" class="frame-wrap" hidden>
+          <iframe
+            id="windy-map"
+            title="Windy wind map"
+            src="about:blank"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+        <div class="layer-bar" aria-label="Airspace layer toggles">
+          <span class="layer-label">Airspace</span>
+          <label class="layer-opt"><input type="checkbox" data-layer="ctr" checked /> CTR</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="tma" checked /> TMA</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="atz" checked /> ATZ</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="cta" checked /> CTA</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="restricted" checked /> Restricted</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="prohibited" checked /> Prohibited</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="danger" checked /> Danger</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="aerodrome" checked /> Aerodromes</label>
+          <label class="layer-opt"><input type="checkbox" data-layer="helistop" /> Helistops</label>
+          <label class="layer-opt drone"><input type="checkbox" id="drone-toggle" /> 10 km rings + tap check</label>
+        </div>
+        <div id="drone-panel" class="drone-panel" hidden></div>
+        <p id="map-legal" class="legal">Tiles © <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Esri</a>. Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo.com</a>. Airspace: ATNS RSA DATA KMZ — not for navigation.</p>
+      </section>
+
+      <section class="panel wx-panel tab-panel" data-tab="wx" aria-labelledby="wx-heading">
+        <div class="panel-head">
+          <div>
+            <h2 id="wx-heading">METAR &amp; TAF</h2>
+            <p class="caption">Live from the Aviation Weather Center via this site’s proxy. Auto-refresh every 5 minutes.</p>
+          </div>
+        </div>
+        <div id="wx-status" class="wx-status">Loading current weather…</div>
+        <div id="wx-cards" class="wx-cards"></div>
+      </section>
+    </main>
+
+    <section class="panel sigmet-panel tab-panel" data-tab="sigmet" aria-labelledby="sigmet-heading">
+      <div class="panel-head">
+        <div>
+          <h2 id="sigmet-heading">SIGMETs</h2>
+          <p id="sigmet-caption" class="caption">International SIGMETs from the Aviation Weather Center for the FAJA and FACA FIRs (and FAJO when issued). Auto-refresh with the briefing.</p>
+        </div>
+      </div>
+      <div id="sigmet-status" class="wx-status">Loading SIGMETs…</div>
+      <div id="sigmet-list" class="sigmet-list"></div>
+    </section>
+
+    <section class="panel cams-panel tab-panel" data-tab="cams" aria-labelledby="cam-heading">
+      <div class="panel-head">
+        <div>
+          <h2 id="cam-heading">Webcams</h2>
+          <p class="caption">Official Windy webcam player where a camera ID has been verified. Otherwise a link to nearby cameras on Windy.</p>
+        </div>
+        <a id="webcam-link" class="text-link" href="https://www.windy.com/webcams" target="_blank" rel="noopener noreferrer">Windy webcams near airport</a>
+      </div>
+      <div id="webcams" class="webcam-grid"></div>
+    </section>
+
+    <section class="panel notam-panel tab-panel" data-tab="notam" aria-labelledby="notam-heading">
+      <div class="panel-head">
+        <div>
+          <h2 id="notam-heading">NOTAMs</h2>
+          <p id="notam-caption" class="caption">Live text loads when a legitimate NOTAM API is configured on the server. Auto-refresh every 20 minutes. Official RSA source remains File2Fly.</p>
+        </div>
+      </div>
+      <div id="notam-status" class="wx-status">Checking NOTAM source…</div>
+      <div id="notam-list" class="notam-list"></div>
+      <div id="notam-links" class="link-grid"></div>
+    </section>
+
+    <footer class="foot">
+      <p>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>, <a href="https://www.rainviewer.com/" target="_blank" rel="noopener noreferrer">RainViewer</a>, <a href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EOSDIS GIBS</a>, <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Esri</a>, <a href="https://aviationweather.gov/data/api/" target="_blank" rel="noopener noreferrer">Aviation Weather Center API</a>, <a href="https://www.atns.com/products/aim/RSA%20Airspaces%20in%203D" target="_blank" rel="noopener noreferrer">ATNS RSA DATA KMZ</a>, optional <a href="https://embed.windy.com/config/map" target="_blank" rel="noopener noreferrer">Windy embed</a>, <a href="https://file2fly.atns.co.za/aes/login.jsp" target="_blank" rel="noopener noreferrer">ATNS File2Fly</a>, <a href="https://aviation.weathersa.co.za/" target="_blank" rel="noopener noreferrer">SAWS</a>.</p>
+      <p>The optional Windy widget is intended for media use; Windy’s terms restrict use by weather apps and other commercial websites, and the logo must stay visible and clickable. Open-Meteo’s free API is for non-commercial use (attribution required, CC BY 4.0). RainViewer’s free Weather Maps API is for personal and educational use (attribution required). NASA GIBS imagery is used with acknowledgement of NASA EOSDIS GIBS / Worldview. ATNS airspace data must not be used for navigation. See the README.</p>
+    </footer>
+
+    <nav class="tab-bar" aria-label="Sections">
+      <button type="button" class="tab-btn active" data-tab="map">Map</button>
+      <button type="button" class="tab-btn" data-tab="wx">METAR</button>
+      <button type="button" class="tab-btn" data-tab="sigmet">SIGMET</button>
+      <button type="button" class="tab-btn" data-tab="cams">Cams</button>
+      <button type="button" class="tab-btn" data-tab="notam">NOTAMs</button>
+    </nav>
+
+    <script src="/vendor/leaflet/leaflet.js"></script>
+    <script src="/map.js" defer></script>
+    <script src="/app.js" defer></script>
+  </body>
+</html>

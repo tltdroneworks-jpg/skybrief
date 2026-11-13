@@ -1,0 +1,39 @@
+{
+  "source": "ATNS RSA DATA KMZ",
+  "sourceUrl": "https://www.atns.com/products/aim/RSA%20Airspaces%20in%203D",
+  "downloadUrl": "https://www.atns.com/Aeronautical%20Information%20Management/RSA%20Airspaces%20in%203D/RSA%20DATA.zip",
+  "cycle": "29OCT2026",
+  "fileName": "RSA DATA -29OCT2026.kmz",
+  "convertedAt": "2026-11-12T15:29:31Z",
+  "featureCount": 1142,
+  "counts": {
+    "aerodrome": 769,
+    "helistop": 93,
+    "cta": 12,
+    "tma": 123,
+    "ctr": 18,
+    "atz": 15,
+    "prohibited": 14,
+    "danger": 49,
+    "restricted": 49
+  },
+  "attribution": "Airspace data: ATNS RSA DATA KMZ (South African Aeronautical Information Product). This is a gross representation only. It is not intended and must not be used for navigation, automated flight guidance, or other precision activity involving the safety of aircraft and the public. ATNS makes no warranty as to accuracy, completeness or currency. Verify information before relying on it.",
+  "terms": "Freely copied and adapted from the official ATNS RSA DATA KMZ as permitted by ATNS, with attribution. Not for navigation or automated flight guidance.",
+  "part101": {
+    "citationDate": "Wording checked 12 Nov 2026 against the Civil Aviation Regulations as published on acts.co.za (101.05.10 as substituted by the 26th Amendment, GG48228, 17 March 2023; 101.05.3 as currently published).",
+    "generalRestrictions": "SA-CAR 101.05.10(3): Unless as otherwise authorised by the Director, a UA shall not be operated \u2014 (a) above 400 ft above the surface; (b) within a radius of 10 km from an aerodrome reference point; (c) within restricted or prohibited airspace; or (d) adjacent to or above a nuclear power plant, prison, police station, crime scene, court of law, national key point or strategic installation.",
+    "controlledAirspace": "SA-CAR 101.05.3(1): A UAS shall not be operated in controlled airspace, except by a holder of a UASOC and as approved by the Director in the UASOC's operations manual. 101.05.3(2): The Director may approve a UA operation in controlled airspace only in VMC in an ATZ and CTR below 400 ft, and subject to Document SA-CATS 101.",
+    "planningAid": "Planning aid only \u2014 not permission to fly and not an official briefing. UASOC holders may operate in otherwise restricted circumstances if authorised by the Director. Always verify against current official sources (SACAA, ATNS File2Fly, the AIP) and your operations manual."
+  },
+  "layers": [
+    "ctr",
+    "tma",
+    "atz",
+    "cta",
+    "restricted",
+    "prohibited",
+    "danger",
+    "aerodrome",
+    "helistop"
+  ]
+}

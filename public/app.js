@@ -623,11 +623,37 @@ async function loadWeather({ refresh = false } = {}) {
   }
 }
 
+async function fetchServerJson(url) {
+  const res = await fetch(url);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+// Open-Meteo data is fetched straight from the browser first, so each user's own
+// IP and free-tier quota is used (Render's shared outbound IP hits Open-Meteo's
+// daily limit). If that fails, fall back to the server proxy.
+async function openMeteoFirst(clientFn, serverUrl) {
+  const om = window.SkyOpenMeteo;
+  if (om) {
+    try {
+      return await clientFn(om);
+    } catch (err) {
+      console.warn("Direct Open-Meteo fetch failed, trying the server", err);
+      try {
+        return await fetchServerJson(serverUrl);
+      } catch (serverErr) {
+        throw new Error(`${err.message}; server: ${serverErr.message}`);
+      }
+    }
+  }
+  return fetchServerJson(serverUrl);
+}
+
 async function loadWind() {
   try {
-    const res = await fetch(`/api/wind?${queryString()}`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const ids = composeIds().ids;
+    const data = await openMeteoFirst((om) => om.getWind(ids, state.airports), `/api/wind?${queryString()}`);
     state.wind = data;
     renderMap();
   } catch (err) {
@@ -637,9 +663,7 @@ async function loadWind() {
 
 async function loadForecast() {
   try {
-    const res = await fetch("/api/forecast");
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await openMeteoFirst((om) => om.getForecast(), "/api/forecast");
     state.forecast = data;
     if (state.forecastIndex >= (data.times || []).length) state.forecastIndex = 0;
     if (window.WindMap) window.WindMap.setForecast(data);
@@ -673,9 +697,10 @@ async function loadRadar() {
 async function loadPointWx(point) {
   if (!point) return;
   try {
-    const res = await fetch(`/api/point?lat=${encodeURIComponent(point.lat)}&lon=${encodeURIComponent(point.lon)}`);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    const data = await openMeteoFirst(
+      (om) => om.getPoint(point.lat, point.lon),
+      `/api/point?lat=${encodeURIComponent(point.lat)}&lon=${encodeURIComponent(point.lon)}`
+    );
     state.pointWx = data;
     renderPointReadout();
   } catch (err) {
@@ -1387,9 +1412,9 @@ async function init() {
   els.input.value = params.get("ids") || els.input.value || "FAOR";
   const wxParam = (params.get("wx") || params.get("layer") || "").toLowerCase();
   if (WX_LAYERS[wxParam]) setWxLayer(wxParam);
-  const plat = Number(params.get("lat"));
-  const plon = Number(params.get("lon"));
-  if (Number.isFinite(plat) && Number.isFinite(plon)) {
+  const plat = params.has("lat") && params.get("lat") !== "" ? Number(params.get("lat")) : NaN;
+  const plon = params.has("lon") && params.get("lon") !== "" ? Number(params.get("lon")) : NaN;
+  if (Number.isFinite(plat) && Number.isFinite(plon) && (plat || plon)) {
     state.clickPoint = { lat: plat, lon: plon };
   }
   applyIdsFromForm();

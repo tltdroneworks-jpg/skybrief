@@ -697,7 +697,11 @@ window.WindMap = (() => {
         const layer = L.geoJSON(feature, {
           pane: "airspacePane",
           style: () => ({ ...LAYER_STYLES[klass] }),
-          onEachFeature: (f, l) => l.bindPopup(airspacePopup(f.properties || {})),
+          onEachFeature: (f, l) => {
+            l.bindPopup(airspacePopup(f.properties || {}));
+            // The popup stops the click, so also feed the tap to the point readout.
+            l.on("click", onMapClick);
+          },
         });
         groups[klass].addLayer(layer);
       }

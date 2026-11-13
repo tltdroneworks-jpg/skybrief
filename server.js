@@ -88,6 +88,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     service: "pilot-weather-site",
+    version: require("./package.json").version,
     notamProviders: configuredProviders(),
     airspaceCycle: air.meta.cycle || null,
     airspaceFeatures: air.meta.featureCount || (air.geojson.features || []).length,

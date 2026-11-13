@@ -72,7 +72,7 @@ Skybrief is a standalone web app, not a store app.
 
 Requirements: a **service worker**, a **manifest**, 192 and 512 icons, and **HTTPS** (or `http://localhost` / `http://127.0.0.1`). HTTP on a LAN IP will load in the browser but typically will not offer install.
 
-The service worker (`public/sw.js`, cache name `skybrief-v1.3.0`) precaches the app shell (HTML, CSS, JS, Leaflet, icons). API GET requests, including `/api/pdf`, use **network-first** and store the last successful response, so a recent METAR/TAF or briefing pack can still open if the network drops. The worker does not invent live weather when nothing was cached. Bump the cache name in `sw.js` after a UI release so clients fetch the new shell.
+The service worker (`public/sw.js`, cache name `skybrief-v1.3.1`) precaches the app shell (HTML, CSS, JS, Leaflet, icons). API GET requests, including `/api/pdf`, use **network-first** and store the last successful response, so a recent METAR/TAF or briefing pack can still open if the network drops. The worker does not invent live weather when nothing was cached. Bump the cache name in `sw.js` after a UI release so clients fetch the new shell.
 
 ## Hosting as a PWA (Render or Railway recommended)
 

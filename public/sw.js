@@ -1,4 +1,4 @@
-const VERSION = "skybrief-v1.3.1";
+const VERSION = "skybrief-v1.3.2";
 const SHELL = [
   "/",
   "/index.html",
@@ -6,6 +6,7 @@ const SHELL = [
   "/app.js",
   "/map.js",
   "/openmeteo.js",
+  "/feedback.js",
   "/manifest.webmanifest",
   "/favicon.png",
   "/icons/icon-192.png",

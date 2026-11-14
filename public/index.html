@@ -47,6 +47,10 @@
         <p id="clock" class="clock">—</p>
         <p id="updated" class="updated">Weather not loaded yet</p>
       </div>
+      <button type="button" id="feedback-btn" class="btn feedback-btn" aria-haspopup="dialog" aria-controls="feedback-sheet">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Feedback</span>
+      </button>
     </header>
 
     <div class="disclaimer" role="note">
@@ -216,6 +220,7 @@
     </section>
 
     <footer class="foot">
+      <p class="foot-feedback">Testing Skybrief? <button type="button" class="link-btn" data-feedback-open>Send feedback</button> — bugs, missing features, wrong data or design ideas all help.</p>
       <p>Sources: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>, <a href="https://www.rainviewer.com/" target="_blank" rel="noopener noreferrer">RainViewer</a>, <a href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EOSDIS GIBS</a>, <a href="https://www.esri.com/" target="_blank" rel="noopener noreferrer">Esri</a>, <a href="https://aviationweather.gov/data/api/" target="_blank" rel="noopener noreferrer">Aviation Weather Center API</a>, <a href="https://www.atns.com/products/aim/RSA%20Airspaces%20in%203D" target="_blank" rel="noopener noreferrer">ATNS RSA DATA KMZ</a>, optional <a href="https://embed.windy.com/config/map" target="_blank" rel="noopener noreferrer">Windy embed</a>, <a href="https://file2fly.atns.co.za/aes/login.jsp" target="_blank" rel="noopener noreferrer">ATNS File2Fly</a>, <a href="https://aviation.weathersa.co.za/" target="_blank" rel="noopener noreferrer">SAWS</a>.</p>
       <p>The optional Windy widget is intended for media use; Windy’s terms restrict use by weather apps and other commercial websites, and the logo must stay visible and clickable. Open-Meteo’s free API is for non-commercial use (attribution required, CC BY 4.0). RainViewer’s free Weather Maps API is for personal and educational use (attribution required). NASA GIBS imagery is used with acknowledgement of NASA EOSDIS GIBS / Worldview. ATNS airspace data must not be used for navigation. See the README.</p>
     </footer>
@@ -228,9 +233,52 @@
       <button type="button" class="tab-btn" data-tab="notam">NOTAMs</button>
     </nav>
 
+    <dialog id="feedback-sheet" class="feedback-sheet" aria-labelledby="feedback-title">
+      <form id="feedback-form" class="feedback-form" method="dialog" novalidate>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <div class="sheet-head">
+          <div>
+            <h2 id="feedback-title">Send feedback</h2>
+            <p class="caption">Suggestions from test pilots shape Skybrief. Sending opens your email app with everything filled in.</p>
+          </div>
+          <button type="button" class="sheet-close" data-feedback-close aria-label="Close feedback">×</button>
+        </div>
+        <div class="sheet-grid">
+          <label class="field">
+            <span>Name <em>(optional)</em></span>
+            <input id="fb-name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Your name" />
+          </label>
+          <label class="field">
+            <span>Licence / what you fly <em>(optional)</em></span>
+            <input id="fb-licence" name="licence" type="text" maxlength="80" placeholder="e.g. PPL, drone RPL" />
+          </label>
+        </div>
+        <fieldset class="fb-cats">
+          <legend>Category</legend>
+          <label class="fb-cat"><input type="radio" name="category" value="Bug" checked /><span>Bug</span></label>
+          <label class="fb-cat"><input type="radio" name="category" value="Missing feature" /><span>Missing feature</span></label>
+          <label class="fb-cat"><input type="radio" name="category" value="Data wrong" /><span>Data wrong</span></label>
+          <label class="fb-cat"><input type="radio" name="category" value="Design" /><span>Design</span></label>
+          <label class="fb-cat"><input type="radio" name="category" value="Other" /><span>Other</span></label>
+        </fieldset>
+        <label class="field">
+          <span>Message</span>
+          <textarea id="fb-message" name="message" rows="5" maxlength="2000" required placeholder="What happened, what you expected, or what you'd like to see"></textarea>
+        </label>
+        <p id="fb-error" class="fb-error" role="alert" hidden>Please write a short message first.</p>
+        <p class="hint fb-context">Your email will also include the app version, your device/browser and the current map layer and link, to help reproduce issues.</p>
+        <div class="sheet-actions">
+          <button type="submit" id="fb-send" class="btn primary">Send feedback</button>
+          <a id="fb-github" class="fb-github" href="https://github.com/tltdroneworks-jpg/skybrief/issues/new" target="_blank" rel="noopener noreferrer">Or open a GitHub issue</a>
+        </div>
+        <p id="fb-sent" class="fb-sent" role="status" hidden>Your email app should open with the feedback ready. Press send there. If nothing opened, email <a href="mailto:tltdroneworks@gmail.com">tltdroneworks@gmail.com</a> or use the GitHub link.</p>
+      </form>
+    </dialog>
+
     <script src="/vendor/leaflet/leaflet.js"></script>
     <script src="/openmeteo.js" defer></script>
     <script src="/map.js" defer></script>
     <script src="/app.js" defer></script>
+    <script src="/feedback.js" defer></script>
   </body>
 </html>

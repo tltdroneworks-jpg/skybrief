@@ -2,3 +2,9 @@ node_modules/
 .DS_Store
 *.log
 .env
+
+# Local screenshots
+preview.png
+preview-mobile.png
+live-preview*.png
+feedback-preview.png
